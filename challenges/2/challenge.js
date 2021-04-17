@@ -52,6 +52,39 @@
  *  }
  */
 
-const normalizeData = unormalized => {}
+
+const normalizeData = unormalized => {
+  return Object.keys(unormalized).reduce((finalObject, objectKey, index, arraySource) => {
+    if (typeof unormalized[objectKey] === "string") {
+      finalObject.results = {}
+      finalObject.results[unormalized[objectKey]] = {}
+    } else {
+      if (Array.isArray(unormalized[objectKey])) {
+        finalObject.results[unormalized[arraySource[index - 2]]].reports = []
+        finalObject.reports = {}
+        unormalized[objectKey].map((report, reportIndex) => {
+          finalObject.results[unormalized[arraySource[index - 2]]].reports.push(report.id)
+          finalObject.reports[unormalized[objectKey][reportIndex].id] = {
+            id: unormalized[objectKey][reportIndex].id,
+            user: unormalized[arraySource[index - 1]].id,
+            document: unormalized[objectKey][reportIndex].result.document,
+            status: unormalized[objectKey][reportIndex].result.status
+          }
+        })
+      } else {
+        finalObject.results[unormalized[arraySource[index - 1]]] = {
+          id: unormalized[arraySource[index - 1]],
+          user: unormalized[objectKey].id
+        }
+        finalObject.users = {}
+        finalObject.users[unormalized[objectKey].id] = {
+          id: unormalized[objectKey].id,
+          name: unormalized[objectKey].name
+        }
+      }
+    }
+    return finalObject
+  }, {})
+}
 
 module.exports = normalizeData
